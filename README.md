@@ -38,14 +38,6 @@ Open [http://localhost:3000](http://localhost:3000) to see the app in action!
 ---
 
 
-| Home Page                           | Quiz Page                           |
-| ----------------------------------- | ----------------------------------- |
-| ![Home](public/screenshot-home.png) | ![Quiz](public/screenshot-quiz.png) |
-
-> _Add your own screenshots or GIFs in the `public/` folder!_
-
----
-
 ## 🧑‍💻 Tech Stack
 
 - [Next.js](https://nextjs.org/) ⚡
@@ -75,9 +67,9 @@ This project is licensed under the MIT License. See the [LICENSE](LICENSE) file 
 
 ## 🙋‍♂️ Contact
 
-Made with ❤️ by [Your Name](https://github.com/yourusername)
+Made with ❤️ by [Shashwat Mahendra](http://github.com/shashwat2104/)
 
-[![Star on GitHub](https://img.shields.io/github/stars/yourusername/hinglish-havoc?style=social)](https://github.com/yourusername/hinglish-havoc)
+[![Star on GitHub](https://img.shields.io/github/stars/Shashwat2104/hinglish-havoc?style=social)](https://github.com/Shashwat2104/hinglish-havoc)
 
 ---
 
