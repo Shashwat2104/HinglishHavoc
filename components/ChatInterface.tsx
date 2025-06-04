@@ -1,13 +1,13 @@
 "use client";
 import { motion } from "framer-motion";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+import { useTheme } from "next-themes";
 
 interface Message {
   role: "user" | "bot";
   content: string;
-  context?: "professional" | "personal";
 }
 
 export default function ChatInterface() {
@@ -20,9 +20,11 @@ export default function ChatInterface() {
   ]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [chatContext, setChatContext] = useState<"professional" | "personal">(
-    "personal"
-  );
+  const { theme, setTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+
+  // After mounting, we have access to the theme
+  useEffect(() => setMounted(true), []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -31,7 +33,6 @@ export default function ChatInterface() {
     const userMessage: Message = {
       role: "user",
       content: input,
-      context: chatContext,
     };
 
     setMessages((prev) => [...prev, userMessage]);
@@ -39,64 +40,22 @@ export default function ChatInterface() {
     setIsLoading(true);
 
     try {
-      console.log("Sending request to API with:", {
-        userInput: input,
-        chatHistory: messages.slice(-3),
-        context: chatContext,
-      });
-
       const response = await fetch("/api/generate-persona", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "X-Debug": "true",
         },
         body: JSON.stringify({
           userInput: input,
           chatHistory: messages.slice(-3),
-          context: chatContext,
         }),
       });
 
-      console.log("Received response status:", response.status);
-
       if (!response.ok) {
-        const errorData = await response.json();
-        console.error("API Error Details:", errorData);
-
-        // Handle specific error cases from the enhanced route
-        if (errorData.error === "Chat data configuration error") {
-          throw new Error("Configuration issue: " + errorData.solution);
-        }
-        if (errorData.error === "Chat data processing error") {
-          throw new Error("Couldn't process Riza's chat style data");
-        }
-        if (errorData.error === "Method not allowed. Please use POST.") {
-          throw new Error("Technical issue with request method");
-        }
-        if (
-          errorData.error ===
-          "Invalid request format. Please provide valid JSON data."
-        ) {
-          throw new Error("Request formatting error");
-        }
-        if (errorData.error?.includes("userInput")) {
-          throw new Error("Message validation failed");
-        }
-        if (errorData.error?.includes("context")) {
-          throw new Error("Context validation failed");
-        }
-
-        throw new Error(
-          errorData.error ||
-            errorData.message ||
-            errorData.details ||
-            `Server responded with ${response.status}`
-        );
+        throw new Error("Failed to get response");
       }
 
       const data = await response.json();
-      console.log("API Response Data:", data);
 
       if (!data?.response) {
         throw new Error("Invalid response format from server");
@@ -105,25 +64,13 @@ export default function ChatInterface() {
       const botMessage: Message = {
         role: "bot",
         content: data.response,
-        context: chatContext,
       };
       setMessages((prev) => [...prev, botMessage]);
-
-      // Log metadata if available for debugging
-      if (data.metadata) {
-        console.log("Response metadata:", data.metadata);
-      }
     } catch (error) {
-      console.error("Chat Error:", {
-        error,
-        input,
-        chatContext,
-        timestamp: new Date().toISOString(),
-      });
-
+      console.error("Chat Error:", error);
       const errorMessage: Message = {
         role: "bot",
-        content: getEnhancedErrorMessage(error),
+        content: "Oops! Something went wrong. Please try again! 🤔",
       };
       setMessages((prev) => [...prev, errorMessage]);
     } finally {
@@ -131,200 +78,95 @@ export default function ChatInterface() {
     }
   };
 
-  // Enhanced error message handler combining both approaches
-  const getEnhancedErrorMessage = (error: unknown): string => {
-    if (error instanceof Error) {
-      // Handle specific configuration and processing errors
-      if (error.message.includes("Configuration issue")) {
-        return `Setup issue! ${
-          error.message.split(":")[1]
-        }. Please contact support to fix the chat data configuration. 🛠️`;
-      }
-      if (error.message.includes("Couldn't process")) {
-        return "Having trouble accessing my chat history... Try again later? 📚";
-      }
-
-      // Handle API-specific errors
-      if (error.message.includes("Failed to generate authentic response")) {
-        return "Oops! I'm having trouble channeling Riza right now. Try asking differently? 😅";
-      }
-      if (error.message.includes("Technical issue with request method")) {
-        return "Technical hiccup! Please refresh the page and try again. 🔄";
-      }
-      if (error.message.includes("Request formatting error")) {
-        return "Something went wrong with the message format. Please try again! 📝";
-      }
-      if (error.message.includes("Message validation failed")) {
-        return "Please make sure your message isn't empty and try again! ✍️";
-      }
-      if (error.message.includes("Context validation failed")) {
-        return "Context switch issue! Try toggling between Personal/Professional mode. 🔄";
-      }
-
-      // Handle network and server errors
-      if (
-        error.message.includes("network") ||
-        error.message.includes("NetworkError")
-      ) {
-        return "Network issue! Check your connection and try again 🌐";
-      }
-      if (
-        error.message.includes("500") ||
-        error.message.includes("Internal server error")
-      ) {
-        return "Server's feeling shy today... Try again later? 🛠️";
-      }
-      if (error.message.includes("400")) {
-        return "Something about your request needs fixing. Try rephrasing? 🤔";
-      }
-      if (error.message.includes("404")) {
-        return "Couldn't find the chat service. Please contact support! 🔍";
-      }
-      if (error.message.includes("timeout")) {
-        return "Request took too long... Maybe try a shorter message? ⏰";
-      }
-
-      // Generic error with Riza's style
-      return `Kuch toh gadbad hai... (${error.message}) 🤷‍♀️`;
-    }
-
-    return "Something unexpected happened! Please try again. 🤨";
-  };
-
-  // Toggle between professional/personal context
-  const toggleContext = () => {
-    const newContext =
-      chatContext === "professional" ? "personal" : "professional";
-    setChatContext(newContext);
-
-    const contextMessage: Message = {
-      role: "bot",
-      content:
-        newContext === "professional"
-          ? "Switched to professional mode! Ask about my work experience, education, or research 💼"
-          : "Switched to personal chat mode. Let's talk casually! 😊",
-      context: newContext,
-    };
-    setMessages((prev) => [...prev, contextMessage]);
-
-    console.log("Context changed to:", newContext);
-  };
+  if (!mounted) return null;
 
   return (
     <motion.div
-      className="flex flex-col h-screen max-w-2xl mx-auto p-2 sm:p-4 bg-gradient-to-b from-gray-50 to-white"
+      className="flex flex-col h-screen max-w-2xl mx-auto p-2 sm:p-4 bg-gradient-to-br from-gray-50 via-gray-100 to-gray-200 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
+      transition={{ duration: 0.5 }}
     >
-      {/* Enhanced Context Toggle Button */}
+      {/* Theme Toggle Button */}
       <motion.button
-        onClick={toggleContext}
-        className={`self-end mb-2 px-3 py-1 text-xs sm:text-sm rounded-full transition-all duration-200 ${
-          chatContext === "professional"
-            ? "bg-blue-200 hover:bg-blue-300 text-blue-800"
-            : "bg-green-200 hover:bg-green-300 text-green-800"
-        }`}
-        whileHover={{ scale: 1.05 }}
+        onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+        className="self-end mb-2 px-4 py-2 text-sm rounded-full transition-all duration-300 shadow-lg backdrop-blur-sm bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600"
+        whileHover={{ scale: 1.05, y: -2 }}
         whileTap={{ scale: 0.95 }}
-        disabled={isLoading}
       >
-        {chatContext === "professional" ? "👔 Professional" : "😊 Personal"}{" "}
-        Mode
-        {isLoading && " (switching...)"}
+        <span className="flex items-center gap-2">
+          {theme === "dark" ? "🌞 Light" : "🌙 Dark"} Mode
+        </span>
       </motion.button>
 
       {/* Chat Messages Container */}
       <motion.div
-        className="flex-1 overflow-y-auto p-2 sm:p-4 bg-white rounded-lg shadow-lg"
-        initial={{ scale: 0.95 }}
-        animate={{ scale: 1 }}
+        className="flex-1 overflow-y-auto p-3 sm:p-4 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-2xl shadow-xl"
+        initial={{ scale: 0.95, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
         transition={{ duration: 0.3 }}
+        style={{
+          scrollbarWidth: "thin",
+          scrollbarColor: theme === "dark" ? "#4B5563" : "#9CA3AF",
+        }}
       >
         {messages.map((message, index) => (
           <motion.div
             key={index}
-            className={`mb-3 p-3 rounded-lg transition-colors duration-200 ${
+            className={`mb-4 p-4 rounded-2xl transition-all duration-300 shadow-md ${
               message.role === "user"
-                ? "bg-blue-100 ml-auto max-w-[90%] md:max-w-[80%]"
-                : "bg-gray-100 mr-auto max-w-[90%] md:max-w-[80%]"
-            } ${
-              message.context === "professional"
-                ? "border-l-4 border-blue-500"
-                : message.role === "bot" && chatContext === "personal"
-                ? "border-l-4 border-green-400"
-                : ""
+                ? "bg-blue-500/10 dark:bg-blue-500/20 ml-auto max-w-[90%] md:max-w-[80%]"
+                : "bg-gray-100/80 dark:bg-gray-700/80 mr-auto max-w-[90%] md:max-w-[80%]"
             }`}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0 }}
+            initial={{ opacity: 0, y: 20, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            transition={{ duration: 0.3, delay: index * 0.1 }}
+            whileHover={{ scale: 1.02 }}
           >
-            <ReactMarkdown remarkPlugins={[remarkGfm]}>
-              {message.content}
-            </ReactMarkdown>
-            {message.context && (
-              <div
-                className={`text-xs mt-1 ${
-                  message.context === "professional"
-                    ? "text-blue-600"
-                    : "text-green-600"
-                }`}
-              >
-                {message.context === "professional"
-                  ? "👔 Professional Mode"
-                  : "😊 Personal Mode"}
-              </div>
-            )}
+            <div className="prose dark:prose-invert max-w-none">
+              <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                {message.content}
+              </ReactMarkdown>
+            </div>
           </motion.div>
         ))}
 
-        {/* Enhanced Loading State */}
+        {/* Loading State */}
         {isLoading && (
           <motion.div
-            className="mb-3 p-3 rounded-lg bg-gray-200 mr-auto max-w-[90%] md:max-w-[80%]"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
+            className="mb-4 p-4 rounded-2xl bg-gray-200/80 dark:bg-gray-700/80 mr-auto max-w-[90%] md:max-w-[80%] shadow-md"
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.3 }}
           >
-            <div className="flex items-center gap-2 text-gray-600">
+            <div className="flex items-center gap-3 text-gray-600 dark:text-gray-300">
               <motion.div
                 animate={{ rotate: 360 }}
-                transition={{ repeat: Infinity, duration: 1 }}
-                className={`h-4 w-4 border-2 rounded-full ${
-                  chatContext === "professional"
-                    ? "border-blue-500 border-t-transparent"
-                    : "border-green-500 border-t-transparent"
-                }`}
+                transition={{ repeat: Infinity, duration: 1.5, ease: "linear" }}
+                className="h-5 w-5 border-3 border-gray-600 dark:border-gray-300 border-t-transparent rounded-full"
               />
-              {chatContext === "professional"
-                ? "Checking my professional notes..."
-                : "Riza-style javab dhund raha hoon..."}
+              <span className="text-sm">Thinking...</span>
             </div>
           </motion.div>
         )}
       </motion.div>
 
-      {/* Enhanced Form */}
+      {/* Input Form */}
       <motion.form
         onSubmit={handleSubmit}
-        className="mt-3 sm:mt-4 flex gap-2"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
+        className="mt-4 flex gap-3"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3 }}
       >
         <textarea
           value={input}
           onChange={(e) => setInput(e.target.value)}
-          placeholder={
-            chatContext === "professional"
-              ? "Ask about my professional background, education, or research..."
-              : "Riza se baat karo... (Chat with Riza in her style!)"
-          }
-          className={`flex-1 p-2 text-sm sm:text-base border rounded-lg resize-none transition-all duration-200 focus:ring-2 disabled:opacity-50 ${
-            chatContext === "professional"
-              ? "focus:ring-blue-300 border-blue-200"
-              : "focus:ring-green-300 border-green-200"
-          }`}
+          placeholder="Chat with Riza..."
+          className="flex-1 p-3 text-sm sm:text-base border-2 rounded-xl resize-none transition-all duration-300 focus:ring-2 disabled:opacity-50 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border-gray-200 dark:border-gray-700 focus:ring-blue-300 dark:focus:ring-blue-700"
           rows={3}
           disabled={isLoading}
-          maxLength={500} // Reasonable limit
+          maxLength={500}
           onKeyDown={(e) => {
             if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
               handleSubmit(e);
@@ -334,36 +176,38 @@ export default function ChatInterface() {
         <motion.button
           type="submit"
           disabled={isLoading || !input.trim()}
-          className={`px-4 py-2 text-white rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed ${
-            chatContext === "professional"
-              ? "bg-blue-600 hover:bg-blue-700"
-              : "bg-green-600 hover:bg-green-700"
-          }`}
-          whileHover={{ scale: isLoading ? 1 : 1.05 }}
+          className="px-6 py-3 text-white rounded-xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg bg-blue-500 hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700"
+          whileHover={{ scale: isLoading ? 1 : 1.05, y: -2 }}
           whileTap={{ scale: isLoading ? 1 : 0.95 }}
         >
           {isLoading ? (
             <motion.div
               animate={{ rotate: 360 }}
-              transition={{ repeat: Infinity, duration: 1 }}
-              className="h-4 w-4 border-2 border-white border-t-transparent rounded-full"
+              transition={{ repeat: Infinity, duration: 1.5, ease: "linear" }}
+              className="h-5 w-5 border-3 border-white border-t-transparent rounded-full"
             />
           ) : (
-            <>{chatContext === "professional" ? "Send" : "Bhijvao"} 📤</>
+            <span className="flex items-center gap-2">Send 📤</span>
           )}
         </motion.button>
       </motion.form>
 
       {/* Character count indicator */}
-      <div className="text-xs text-gray-500 mt-1 text-right">
-        {input.length}/500 characters
+      <motion.div
+        className="text-xs text-gray-500 dark:text-gray-400 mt-2 text-right"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.2 }}
+      >
+        <span className={`${input.length > 450 ? "text-red-500" : ""}`}>
+          {input.length}/500 characters
+        </span>
         {input.length > 0 && (
-          <span className="ml-2 text-gray-400">
-            {chatContext === "professional" ? "Ctrl+Enter" : "Ctrl+Enter"} to
-            send
+          <span className="ml-2 text-gray-400 dark:text-gray-500">
+            Ctrl+Enter to send
           </span>
         )}
-      </div>
+      </motion.div>
     </motion.div>
   );
 }
