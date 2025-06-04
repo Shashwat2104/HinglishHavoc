@@ -4,23 +4,23 @@
   :root {
     --background: 0 0% 100%;
     --foreground: 222.2 84% 4.9%;
-    --primary: 221.2 83.2% 53.3%;
-    --primary-foreground: 210 40% 98%;
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
-    --accent: 270 50% 50%;
-    --accent-foreground: 210 40% 98%;
+    --primary: 15 100% 50%; /* Vibrant Orange - representing energy and enthusiasm */
+    --primary-foreground: 0 0% 100%;
+    --secondary: 120 100% 25%; /* Deep Green - representing growth and harmony */
+    --secondary-foreground: 0 0% 100%;
+    --accent: 280 100% 50%; /* Rich Purple - representing creativity and wisdom */
+    --accent-foreground: 0 0% 100%;
   }
 
   .dark {
     --background: 222.2 84% 4.9%;
     --foreground: 210 40% 98%;
-    --primary: 217.2 91.2% 59.8%;
-    --primary-foreground: 222.2 47.4% 11.2%;
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
-    --accent: 270 50% 50%;
-    --accent-foreground: 210 40% 98%;
+    --primary: 15 100% 60%; /* Brighter Orange for dark mode */
+    --primary-foreground: 0 0% 100%;
+    --secondary: 120 100% 35%; /* Brighter Green for dark mode */
+    --secondary-foreground: 0 0% 100%;
+    --accent: 280 100% 60%; /* Brighter Purple for dark mode */
+    --accent-foreground: 0 0% 100%;
   }
 }
 
@@ -35,15 +35,22 @@ body {
 }
 
 body::before {
-  content: '';
+  content: "";
   position: fixed;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  background: 
-    radial-gradient(circle at 20% 20%, rgba(59, 130, 246, 0.1) 0%, transparent 50%),
-    radial-gradient(circle at 80% 80%, rgba(59, 130, 246, 0.1) 0%, transparent 50%);
+  background: radial-gradient(
+      circle at 20% 20%,
+      rgba(255, 140, 0, 0.1) 0%,
+      transparent 50%
+    ),
+    radial-gradient(
+      circle at 80% 80%,
+      rgba(128, 0, 128, 0.1) 0%,
+      transparent 50%
+    );
   pointer-events: none;
   z-index: -1;
 }
@@ -83,20 +90,39 @@ body::before {
 
 /* Animations */
 @keyframes float {
-  0% { transform: translateY(0px) rotate(0deg); }
-  50% { transform: translateY(-10px) rotate(2deg); }
-  100% { transform: translateY(0px) rotate(0deg); }
+  0% {
+    transform: translateY(0px) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-10px) rotate(2deg);
+  }
+  100% {
+    transform: translateY(0px) rotate(0deg);
+  }
 }
 
 @keyframes pulse {
-  0% { transform: scale(1); opacity: 1; }
-  50% { transform: scale(1.05); opacity: 0.8; }
-  100% { transform: scale(1); opacity: 1; }
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.05);
+    opacity: 0.8;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
 }
 
 @keyframes shimmer {
-  0% { background-position: -1000px 0; }
-  100% { background-position: 1000px 0; }
+  0% {
+    background-position: -1000px 0;
+  }
+  100% {
+    background-position: 1000px 0;
+  }
 }
 
 .animate-float {
@@ -140,4 +166,3 @@ body::before {
   transform: scale(0.95);
   transition: opacity 300ms, transform 300ms;
 }
-
