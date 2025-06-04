@@ -28,6 +28,12 @@ export default function ChatInterface() {
   const [mounted, setMounted] = useState(false);
   const [showConfetti, setShowConfetti] = useState(false);
 
+  // Function to trigger confetti
+  const triggerConfetti = () => {
+    setShowConfetti(true);
+    setTimeout(() => setShowConfetti(false), 3000); // Hide confetti after 3 seconds
+  };
+
   // Spring animation for the chat container
   const containerSpring = useSpring({
     from: { opacity: 0, transform: "scale(0.95)" },
@@ -78,6 +84,7 @@ export default function ChatInterface() {
         content: data.response,
       };
       setMessages((prev) => [...prev, botMessage]);
+      triggerConfetti(); // Trigger confetti when we get a response
     } catch (error) {
       console.error("Chat Error:", error);
       const errorMessage: Message = {
