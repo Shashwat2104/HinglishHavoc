@@ -1,36 +1,83 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 🎉 Hinglish Havoc
 
-## Getting Started
+Welcome to **Hinglish Havoc**! 🇮🇳✨
 
-First, run the development server:
+A fun, modern web app built with [Next.js](https://nextjs.org/) that brings the best of Hinglish culture to your screen. Whether you're here to learn, play, or just have fun, Hinglish Havoc has something for everyone!
+
+---
+
+## 🚀 Features
+
+- 🗣️ Hinglish phrase generator
+- 🎮 Interactive games & quizzes
+- 📚 Learn Hinglish words and meanings
+- 🌗 Light & dark mode support
+- ⚡ Super-fast performance (Next.js)
+- 📱 Mobile-friendly design
+
+---
+
+## 🛠️ Getting Started
+
+Clone the repo and install dependencies:
+
+```bash
+git clone https://github.com/yourusername/hinglish-havoc.git
+cd hinglish-havoc
+npm install
+```
+
+Run the development server:
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000) to see the app in action!
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+---
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
-## Learn More
+| Home Page                           | Quiz Page                           |
+| ----------------------------------- | ----------------------------------- |
+| ![Home](public/screenshot-home.png) | ![Quiz](public/screenshot-quiz.png) |
 
-To learn more about Next.js, take a look at the following resources:
+> _Add your own screenshots or GIFs in the `public/` folder!_
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+---
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## 🧑‍💻 Tech Stack
 
-## Deploy on Vercel
+- [Next.js](https://nextjs.org/) ⚡
+- [React](https://react.dev/) ⚛️
+- [TypeScript](https://www.typescriptlang.org/) 🟦
+- [Tailwind CSS](https://tailwindcss.com/) 💨
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+---
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## 🤝 Contributing
+
+Contributions are welcome! Please open an issue or submit a pull request.
+
+1. Fork the repo
+2. Create your feature branch (`git checkout -b feature/YourFeature`)
+3. Commit your changes (`git commit -m 'Add some feature'`)
+4. Push to the branch (`git push origin feature/YourFeature`)
+5. Open a Pull Request
+
+---
+
+## 📄 License
+
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
+
+---
+
+## 🙋‍♂️ Contact
+
+Made with ❤️ by [Your Name](https://github.com/yourusername)
+
+[![Star on GitHub](https://img.shields.io/github/stars/yourusername/hinglish-havoc?style=social)](https://github.com/yourusername/hinglish-havoc)
+
+---
+

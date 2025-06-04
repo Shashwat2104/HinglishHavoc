@@ -1,9 +1,13 @@
 "use client";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { useState, useEffect } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { useTheme } from "next-themes";
+import { TypeAnimation } from "react-type-animation";
+import { useSpring, animated } from "react-spring";
+import ReactConfetti from "react-confetti";
+import { FaRobot, FaUser, FaMoon, FaSun } from "react-icons/fa";
 
 interface Message {
   role: "user" | "bot";
@@ -22,6 +26,14 @@ export default function ChatInterface() {
   const [isLoading, setIsLoading] = useState(false);
   const { theme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
+  const [showConfetti, setShowConfetti] = useState(false);
+
+  // Spring animation for the chat container
+  const containerSpring = useSpring({
+    from: { opacity: 0, transform: "scale(0.95)" },
+    to: { opacity: 1, transform: "scale(1)" },
+    config: { tension: 300, friction: 20 },
+  });
 
   // After mounting, we have access to the theme
   useEffect(() => setMounted(true), []);
@@ -81,60 +93,89 @@ export default function ChatInterface() {
   if (!mounted) return null;
 
   return (
-    <motion.div
-      className="flex flex-col h-screen max-w-2xl mx-auto p-2 sm:p-4 bg-gradient-to-br from-gray-50 via-gray-100 to-gray-200 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900"
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{ duration: 0.5 }}
+    <animated.div
+      style={containerSpring}
+      className="flex flex-col h-screen max-w-4xl mx-auto p-4 sm:p-6"
     >
+      {showConfetti && <ReactConfetti recycle={false} numberOfPieces={200} />}
+
       {/* Theme Toggle Button */}
       <motion.button
         onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-        className="self-end mb-2 px-4 py-2 text-sm rounded-full transition-all duration-300 shadow-lg backdrop-blur-sm bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600"
+        className="self-end mb-4 px-4 py-2 text-sm rounded-full transition-all duration-300 shadow-lg glass hover:shadow-xl"
         whileHover={{ scale: 1.05, y: -2 }}
         whileTap={{ scale: 0.95 }}
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
       >
         <span className="flex items-center gap-2">
-          {theme === "dark" ? "🌞 Light" : "🌙 Dark"} Mode
+          {theme === "dark" ? (
+            <FaSun className="text-yellow-400" />
+          ) : (
+            <FaMoon className="text-blue-400" />
+          )}
+          {theme === "dark" ? "Light" : "Dark"} Mode
         </span>
       </motion.button>
 
       {/* Chat Messages Container */}
       <motion.div
-        className="flex-1 overflow-y-auto p-3 sm:p-4 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-2xl shadow-xl"
+        className="flex-1 overflow-y-auto p-4 sm:p-6 glass rounded-2xl shadow-xl mb-4"
         initial={{ scale: 0.95, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         transition={{ duration: 0.3 }}
-        style={{
-          scrollbarWidth: "thin",
-          scrollbarColor: theme === "dark" ? "#4B5563" : "#9CA3AF",
-        }}
       >
-        {messages.map((message, index) => (
-          <motion.div
-            key={index}
-            className={`mb-4 p-4 rounded-2xl transition-all duration-300 shadow-md ${
-              message.role === "user"
-                ? "bg-blue-500/10 dark:bg-blue-500/20 ml-auto max-w-[90%] md:max-w-[80%]"
-                : "bg-gray-100/80 dark:bg-gray-700/80 mr-auto max-w-[90%] md:max-w-[80%]"
-            }`}
-            initial={{ opacity: 0, y: 20, scale: 0.95 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            transition={{ duration: 0.3, delay: index * 0.1 }}
-            whileHover={{ scale: 1.02 }}
-          >
-            <div className="prose dark:prose-invert max-w-none">
-              <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                {message.content}
-              </ReactMarkdown>
-            </div>
-          </motion.div>
-        ))}
+        <AnimatePresence>
+          {messages.map((message, index) => (
+            <motion.div
+              key={index}
+              className={`mb-4 p-4 rounded-2xl transition-all duration-300 shadow-md ${
+                message.role === "user"
+                  ? "bg-blue-500/10 dark:bg-blue-500/20 ml-auto max-w-[90%] md:max-w-[80%] glass"
+                  : "bg-gray-100/80 dark:bg-gray-700/80 mr-auto max-w-[90%] md:max-w-[80%] glass"
+              }`}
+              initial={{ opacity: 0, y: 20, scale: 0.95 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              transition={{ duration: 0.3, delay: index * 0.1 }}
+              whileHover={{ scale: 1.02 }}
+            >
+              <div className="flex items-start gap-3">
+                <div
+                  className={`p-2 rounded-full ${
+                    message.role === "user" ? "bg-blue-500" : "bg-purple-500"
+                  }`}
+                >
+                  {message.role === "user" ? (
+                    <FaUser className="text-white" />
+                  ) : (
+                    <FaRobot className="text-white" />
+                  )}
+                </div>
+                <div className="prose dark:prose-invert max-w-none">
+                  {message.role === "bot" ? (
+                    <TypeAnimation
+                      sequence={[message.content]}
+                      wrapper="div"
+                      speed={50}
+                      cursor={false}
+                    />
+                  ) : (
+                    <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                      {message.content}
+                    </ReactMarkdown>
+                  )}
+                </div>
+              </div>
+            </motion.div>
+          ))}
+        </AnimatePresence>
 
         {/* Loading State */}
         {isLoading && (
           <motion.div
-            className="mb-4 p-4 rounded-2xl bg-gray-200/80 dark:bg-gray-700/80 mr-auto max-w-[90%] md:max-w-[80%] shadow-md"
+            className="mb-4 p-4 rounded-2xl glass mr-auto max-w-[90%] md:max-w-[80%] shadow-md"
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.3 }}
@@ -154,7 +195,7 @@ export default function ChatInterface() {
       {/* Input Form */}
       <motion.form
         onSubmit={handleSubmit}
-        className="mt-4 flex gap-3"
+        className="flex gap-3 glass p-4 rounded-2xl shadow-xl"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3 }}
@@ -163,7 +204,7 @@ export default function ChatInterface() {
           value={input}
           onChange={(e) => setInput(e.target.value)}
           placeholder="Chat with Riza..."
-          className="flex-1 p-3 text-sm sm:text-base border-2 rounded-xl resize-none transition-all duration-300 focus:ring-2 disabled:opacity-50 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border-gray-200 dark:border-gray-700 focus:ring-blue-300 dark:focus:ring-blue-700"
+          className="flex-1 p-3 text-sm sm:text-base rounded-xl resize-none transition-all duration-300 focus:ring-2 disabled:opacity-50 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border-2 border-gray-200 dark:border-gray-700 focus:ring-blue-300 dark:focus:ring-blue-700"
           rows={3}
           disabled={isLoading}
           maxLength={500}
@@ -176,7 +217,7 @@ export default function ChatInterface() {
         <motion.button
           type="submit"
           disabled={isLoading || !input.trim()}
-          className="px-6 py-3 text-white rounded-xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg bg-blue-500 hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700"
+          className="px-6 py-3 text-white rounded-xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 glass"
           whileHover={{ scale: isLoading ? 1 : 1.05, y: -2 }}
           whileTap={{ scale: isLoading ? 1 : 0.95 }}
         >
@@ -208,6 +249,6 @@ export default function ChatInterface() {
           </span>
         )}
       </motion.div>
-    </motion.div>
+    </animated.div>
   );
 }
