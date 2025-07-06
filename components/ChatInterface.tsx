@@ -19,7 +19,7 @@ export default function ChatInterface() {
     {
       role: "bot",
       content:
-        "Hey! I'm RizaBot 👋 Ready to chat in Riza's unique style! Ask me anything!",
+        "Hey! I'm Govind 👋 Ready to chat in Govind's unique style! Ask me anything!",
     },
   ]);
   const [input, setInput] = useState("");
@@ -210,7 +210,7 @@ export default function ChatInterface() {
         <textarea
           value={input}
           onChange={(e) => setInput(e.target.value)}
-          placeholder="Chat with Riza..."
+          placeholder="Chat with Govind..."
           className="flex-1 p-3 text-sm sm:text-base rounded-xl resize-none transition-all duration-300 focus:ring-2 disabled:opacity-50 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border-2 border-gray-200 dark:border-gray-700 focus:ring-blue-300 dark:focus:ring-blue-700"
           rows={3}
           disabled={isLoading}
